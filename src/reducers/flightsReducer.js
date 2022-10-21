@@ -19,7 +19,6 @@ const flightsReducer = (state = initialState, action) => {
         loading: false,
         error: action.payload,
       };
-
     case actions.FETCH_FLIGHTS_SUCCESS:
       return {
         ...state,
@@ -27,7 +26,6 @@ const flightsReducer = (state = initialState, action) => {
         error: false,
         list: action.payload,
       };
-
     default:
       return state;
   }

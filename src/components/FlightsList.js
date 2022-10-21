@@ -1,28 +1,28 @@
 import React, { useEffect } from "react";
 import { getFlightsAction } from "../actions/fligthsActions";
+
 import { useDispatch, useSelector } from "react-redux";
 import Flight from "./FlightCard";
+import FligthFilterForm from "./FligthFilterForm";
 
-export const Flights = () => {
+export const FlightsList = () => {
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    const getFlights = () => dispatch(getFlightsAction());
-
-    getFlights();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const flights = useSelector((state) => state.flights.list);
 
-  console.log(flights);
+  useEffect(() => {
+    dispatch(getFlightsAction());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
-      <h1 className="text-3xl font-bold underline">FLIGHTS</h1>
+      <FligthFilterForm />
       {flights.length === 0
         ? "No flights available..."
-        : flights.map((flight, index) => <Flight key={index} flight={flight} />)}
+        : flights.map((flight, index) => (
+            <Flight key={index} flight={flight} />
+          ))}
     </>
   );
 };
