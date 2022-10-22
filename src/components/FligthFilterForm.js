@@ -12,6 +12,10 @@ const getAirportsListsFromFlights = (flights) => {
   return [...new Set(flights.map((e) => e.origin))];
 };
 
+const getDestinationList = (filteredFlights) => {
+  return [...new Set(filteredFlights.map((e) => e[1].origin))];
+};
+
 const getFilteredListOfPairedFlights = (
   flightList,
   origin,
@@ -28,7 +32,11 @@ const getFilteredListOfPairedFlights = (
 
   const returnAndFromFlightsWithinPriceLimit = [];
 
-  for (let i = 0; i < fromFlights.length; i++) {
+  const smallerArray =
+    fromFlights.length < returnFlights.length ? fromFlights : returnFlights;
+
+  //pair cheapest fromFlight with cheapest returnFlight
+  for (let i = 0; i < smallerArray.length; i++) {
     if (fromFlights[i].price + returnFlights[i].price < priceLimit) {
       returnAndFromFlightsWithinPriceLimit.push([
         fromFlights[i],
@@ -37,6 +45,7 @@ const getFilteredListOfPairedFlights = (
     }
   }
 
+  //filter paired flights removing the ones with conflicting dates and not enough seats
   return returnAndFromFlightsWithinPriceLimit
     .filter((e) => {
       const fromTripDate = new Date(e[0].date);
@@ -56,10 +65,18 @@ export default function Form() {
   let priceLimit = useSelector((state) => state.userPreferences.priceLimit);
   const flights = useSelector((state) => state.flights.list);
   const origin = useSelector((state) => state.userPreferences.origin);
+  const filteredFlights = useSelector(
+    (state) => state.userPreferences.filteredFlights
+  );
 
   const airportsList = useMemo(
     () => getAirportsListsFromFlights(flights),
     [flights]
+  );
+
+  const destinationsList = useMemo(
+    () => getDestinationList(filteredFlights),
+    [filteredFlights]
   );
 
   const setOrigin = (origin) => {
@@ -121,7 +138,7 @@ export default function Form() {
   };
 
   return (
-    <form className="m-auto mt-5 p-6 bg-white rounded-lg border border-gray-200 shadow-md w-5/6">
+    <form className="m-auto mt-5 p-6 bg-white rounded-lg border border-gray-200 shadow-md w-5/6 lg:w-1/2">
       <div className="flex flex-wrap -mx-3 mb-6">
         <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
           <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
@@ -161,7 +178,7 @@ export default function Form() {
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap -mx-3 mb-6">
+      <div className="flex flex-wrap -mx-3">
         <div className="w-full px-3">
           <label
             htmlFor="price-range"
@@ -182,6 +199,15 @@ export default function Form() {
 
           <p className="text-gray-600 text-xs italic">
             Escoge un número límite para el costo de tus pasajes
+          </p>
+
+          <p className="mt-5">Vuelos disponibles: {filteredFlights.length}</p>
+
+          <p>
+            Destinos Disponibles:
+            {destinationsList.map((e, index) => (
+              <span key={index}> {e} </span>
+            ))}{" "}
           </p>
         </div>
       </div>

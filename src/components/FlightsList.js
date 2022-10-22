@@ -18,9 +18,8 @@ export const FlightsList = () => {
 
   return (
     <>
-      <div>Total {filteredFlights.length}</div>
       {filteredFlights.length === 0
-        ? "Elige el origen, cantidad de pasajeros y el limite de precio que desas para tus vuelos "
+        ? (<p className="m-auto mt-5 p-6 bg-white rounded-lg border border-gray-200 shadow-md w-5/6 lg:w-1/2 italic">Elige el origen, cantidad de pasajeros y el limite de precio que desas para tus vuelos</p>)
         : filteredFlights.map((flights, index) => (
             <Flights key={index} flights={flights} />
           ))}
