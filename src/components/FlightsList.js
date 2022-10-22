@@ -2,13 +2,14 @@ import React, { useEffect } from "react";
 import { getFlightsAction } from "../actions/fligthsActions";
 
 import { useDispatch, useSelector } from "react-redux";
-import Flight from "./FlightCard";
-import FligthFilterForm from "./FligthFilterForm";
+import Flights from "./FlightsCard";
+//import { setPriceLimitAction } from "../actions/userPreferencesAction";
 
 export const FlightsList = () => {
   const dispatch = useDispatch();
+  const filteredFlights = useSelector((state) => state.userPreferences.filteredFlights);
 
-  const flights = useSelector((state) => state.flights.list);
+  
 
   useEffect(() => {
     dispatch(getFlightsAction());
@@ -17,11 +18,11 @@ export const FlightsList = () => {
 
   return (
     <>
-      <FligthFilterForm />
-      {flights.length === 0
-        ? "No flights available..."
-        : flights.map((flight, index) => (
-            <Flight key={index} flight={flight} />
+      <div>Total {filteredFlights.length}</div>
+      {filteredFlights.length === 0
+        ? "Elige el origen, cantidad de pasajeros y el limite de precio que desas para tus vuelos "
+        : filteredFlights.map((flights, index) => (
+            <Flights key={index} flights={flights} />
           ))}
     </>
   );

@@ -55,30 +55,57 @@ const setPriceLimitAction = (priceLimit) => {
 };
 
 const setOrigin = () => ({
-    type: actions.SET_ORIGIN_START,
+  type: actions.SET_ORIGIN_START,
+  payload: true,
+});
+
+const setOriginsSuccess = (origin) => ({
+  type: actions.SET_ORIGIN_SUCCESS,
+  payload: origin,
+});
+
+const setOriginError = () => ({
+  type: actions.SET_ORIGIN_ERROR,
+  payload: true,
+});
+
+const setOriginAction = (origin) => {
+  return (dispatch) => {
+    dispatch(setOrigin());
+
+    try {
+      dispatch(setOriginsSuccess(origin));
+    } catch (error) {
+      dispatch(setOriginError());
+    }
+  };
+};
+
+const setFilteredFlights = () => ({
+    type: actions.SET_FILTERED_FLIGHTS_START,
     payload: true,
   });
   
-  const setOriginsSuccess = (origin) => ({
-    type: actions.SET_ORIGIN_SUCCESS,
+  const setFilteredFlightsSuccess = (origin) => ({
+    type: actions.SET_FILTERED_FLIGHTS_SUCCESS,
     payload: origin,
   });
   
-  const setOriginError = () => ({
-    type: actions.SET_ORIGIN_ERROR,
+  const setFilteredFlightsError = () => ({
+    type: actions.SET_FILTERED_FLIGHTS_ERROR,
     payload: true,
   });
   
-  const setOriginAction = (origin) => {
+  const setFilteredFlightsAction = (filteredFlights) => {
     return (dispatch) => {
-      dispatch(setOrigin());
+      dispatch(setFilteredFlights());
   
       try {
-        dispatch(setOriginsSuccess(origin));
+        dispatch(setFilteredFlightsSuccess(filteredFlights));
       } catch (error) {
-        dispatch(setOriginError());
+        dispatch(setFilteredFlightsError());
       }
     };
   };
 
-export { setPassengersCountAction, setPriceLimitAction, setOriginAction };
+export { setPassengersCountAction, setPriceLimitAction, setOriginAction, setFilteredFlightsAction };

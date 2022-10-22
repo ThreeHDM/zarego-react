@@ -4,6 +4,7 @@ const initialState = {
   passengersCount: 1,
   priceLimit: 300,
   origin: "",
+  filteredFlights: [],
   error: false,
   loading: false,
 };
@@ -46,7 +47,7 @@ const userPreferencesReducer = (state = initialState, action) => {
         error: false,
         priceLimit: action.payload,
       };
-      case actions.SET_ORIGIN_START:
+    case actions.SET_ORIGIN_START:
       return {
         ...state,
         loading: action.payload,
@@ -64,6 +65,24 @@ const userPreferencesReducer = (state = initialState, action) => {
         error: false,
         origin: action.payload,
       };
+      case actions.SET_FILTERED_FLIGHTS_START:
+        return {
+          ...state,
+          loading: action.payload,
+        };
+      case actions.SET_FILTERED_FLIGHTS_ERROR:
+        return {
+          ...state,
+          loading: false,
+          error: action.payload,
+        };
+      case actions.SET_FILTERED_FLIGHTS_SUCCESS:
+        return {
+          ...state,
+          loading: false,
+          error: false,
+          filteredFlights: action.payload,
+        };
     default:
       return state;
   }

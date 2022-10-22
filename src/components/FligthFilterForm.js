@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import {
+  setFilteredFlightsAction,
   setOriginAction,
   setPassengersCountAction,
   setPriceLimitAction,
@@ -11,15 +12,50 @@ const getAirportsListsFromFlights = (flights) => {
   return [...new Set(flights.map((e) => e.origin))];
 };
 
+const getFilteredListOfPairedFlights = (
+  flightList,
+  origin,
+  priceLimit,
+  passengers
+) => {
+  const fromFlights = flightList
+    .filter((e) => e.origin === origin)
+    .sort((a, b) => a.price - b.price);
+
+  const returnFlights = flightList
+    .filter((e) => e.destination === origin)
+    .sort((a, b) => a.price - b.price);
+
+  const returnAndFromFlightsWithinPriceLimit = [];
+
+  for (let i = 0; i < fromFlights.length; i++) {
+    if (fromFlights[i].price + returnFlights[i].price < priceLimit) {
+      returnAndFromFlightsWithinPriceLimit.push([
+        fromFlights[i],
+        returnFlights[i],
+      ]);
+    }
+  }
+
+  return returnAndFromFlightsWithinPriceLimit
+    .filter((e) => {
+      const fromTripDate = new Date(e[0].date);
+      const returnTripDate = new Date(e[1].date);
+      return fromTripDate < returnTripDate;
+    })
+    .filter(
+      (e) => e[0].availability >= passengers && e[1].availability >= passengers
+    );
+};
+
 export default function Form() {
   const dispatch = useDispatch();
-
   let passengersCount = useSelector(
     (state) => state.userPreferences.passengersCount
   );
   let priceLimit = useSelector((state) => state.userPreferences.priceLimit);
-
   const flights = useSelector((state) => state.flights.list);
+  const origin = useSelector((state) => state.userPreferences.origin);
 
   const airportsList = useMemo(
     () => getAirportsListsFromFlights(flights),
@@ -28,19 +64,59 @@ export default function Form() {
 
   const setOrigin = (origin) => {
     dispatch(setOriginAction(origin));
+    dispatch(
+      setFilteredFlightsAction(
+        getFilteredListOfPairedFlights(
+          flights,
+          origin,
+          priceLimit,
+          passengersCount
+        )
+      )
+    );
   };
 
   const priceValue = (priceLimit) => {
     dispatch(setPriceLimitAction(Number(priceLimit)));
+    dispatch(
+      setFilteredFlightsAction(
+        getFilteredListOfPairedFlights(
+          flights,
+          origin,
+          priceLimit,
+          passengersCount
+        )
+      )
+    );
   };
 
-  const increment = () => {
+  const incrementPassengers = () => {
     dispatch(setPassengersCountAction((passengersCount += 1)));
+    dispatch(
+      setFilteredFlightsAction(
+        getFilteredListOfPairedFlights(
+          flights,
+          origin,
+          priceLimit,
+          passengersCount
+        )
+      )
+    );
   };
 
-  const decrement = () => {
+  const decrementPassengers = () => {
     dispatch(
       setPassengersCountAction(passengersCount > 1 ? (passengersCount -= 1) : 1)
+    );
+    dispatch(
+      setFilteredFlightsAction(
+        getFilteredListOfPairedFlights(
+          flights,
+          origin,
+          priceLimit,
+          passengersCount
+        )
+      )
     );
   };
 
@@ -55,6 +131,7 @@ export default function Form() {
             onChange={(e) => setOrigin(e.target.value)}
             className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
           >
+            <option>-- Selecciona el aeropuerto --</option>
             {airportsList.map((airport) => {
               return <option key={airport}>{airport}</option>;
             })}
@@ -67,7 +144,7 @@ export default function Form() {
 
           <div className="flex flex-row h-10 w-1/3 rounded-lg mt-1">
             <div
-              onClick={decrement}
+              onClick={decrementPassengers}
               className="text-center bg-gray-200 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer"
             >
               <span className="m-auto text-2xl font-thin p-5">−</span>
@@ -76,7 +153,7 @@ export default function Form() {
               {passengersCount}
             </div>
             <div
-              onClick={increment}
+              onClick={incrementPassengers}
               className="text-center bg-gray-200 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-r cursor-pointer"
             >
               <span className="m-auto text-2xl font-thin p-5">+</span>
