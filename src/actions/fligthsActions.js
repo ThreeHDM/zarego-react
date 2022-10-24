@@ -22,7 +22,7 @@ const getFlightsAction = () => {
 
     try {
       const response = await axiosClient.get("/flights");
-      dispatch (getFlightsSuccess(response.data))
+      dispatch(getFlightsSuccess(response.data))
     } catch (error) {
       dispatch(getFlightsError());
     }

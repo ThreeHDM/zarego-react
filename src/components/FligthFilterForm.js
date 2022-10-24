@@ -18,51 +18,51 @@ const getDestinationList = (filteredFlights) => {
 
 const getFilteredListOfPairedFlights = (
   flightList,
-  origin,
+  userOrigin,
   priceLimit,
-  passengers
+  passengersCount
 ) => {
   const fromFlights = flightList
-    .filter((e) => e.origin === origin)
+    .filter((e) => e.origin === userOrigin)
     .sort((a, b) => a.price - b.price);
 
   const returnFlights = flightList
-    .filter((e) => e.destination === origin)
+    .filter((e) => e.destination === userOrigin)
     .sort((a, b) => a.price - b.price);
 
-  const returnAndFromFlightsWithinPriceLimit = [];
+  const fromAndReturnFlightsWhithinPriceDateAndPassengers = [];
 
+  //Choose the smallest array for comparing prices
   const smallerArray =
     fromFlights.length < returnFlights.length ? fromFlights : returnFlights;
 
-  //pair cheapest fromFlight with cheapest returnFlight
+  /*
+   * pair cheapest fromFlight with cheapest returnFlight if price is within limit, dates are correct
+   * and both flights have availability
+   */
   for (let i = 0; i < smallerArray.length; i++) {
-    if (fromFlights[i].price + returnFlights[i].price < priceLimit) {
-      returnAndFromFlightsWithinPriceLimit.push([
+    if (
+      fromFlights[i].price + returnFlights[i].price < priceLimit &&
+      new Date(fromFlights[i].date) < new Date(returnFlights[i].date) &&
+      fromFlights[i].availability >= passengersCount &&
+      returnFlights[1].availability >= passengersCount
+    ) {
+      fromAndReturnFlightsWhithinPriceDateAndPassengers.push([
         fromFlights[i],
         returnFlights[i],
       ]);
     }
   }
 
-  //filter paired flights removing the ones with conflicting dates and not enough seats
-  return returnAndFromFlightsWithinPriceLimit
-    .filter((e) => {
-      const fromTripDate = new Date(e[0].date);
-      const returnTripDate = new Date(e[1].date);
-      return fromTripDate < returnTripDate;
-    })
-    .filter(
-      (e) => e[0].availability >= passengers && e[1].availability >= passengers
-    );
+  return fromAndReturnFlightsWhithinPriceDateAndPassengers;
 };
 
 export default function Form() {
   const dispatch = useDispatch();
-  let passengersCount = useSelector(
+  const passengersCount = useSelector(
     (state) => state.userPreferences.passengersCount
   );
-  let priceLimit = useSelector((state) => state.userPreferences.priceLimit);
+  const priceLimit = useSelector((state) => state.userPreferences.priceLimit);
   const flights = useSelector((state) => state.flights.list);
   const origin = useSelector((state) => state.userPreferences.origin);
   const filteredFlights = useSelector(
@@ -108,7 +108,7 @@ export default function Form() {
   };
 
   const incrementPassengers = () => {
-    dispatch(setPassengersCountAction((passengersCount += 1)));
+    dispatch(setPassengersCountAction(passengersCount + 1));
     dispatch(
       setFilteredFlightsAction(
         getFilteredListOfPairedFlights(
@@ -123,7 +123,7 @@ export default function Form() {
 
   const decrementPassengers = () => {
     dispatch(
-      setPassengersCountAction(passengersCount > 1 ? (passengersCount -= 1) : 1)
+      setPassengersCountAction(passengersCount > 1 ? passengersCount - 1 : 1)
     );
     dispatch(
       setFilteredFlightsAction(
@@ -159,7 +159,7 @@ export default function Form() {
             Cantidad de pasajeros
           </label>
 
-          <div className="flex flex-row h-10 w-1/3 rounded-lg mt-1">
+          <div className="flex flex-row h-10 w-1/3 rounded-lg mt-2">
             <div
               onClick={decrementPassengers}
               className="text-center bg-gray-200 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer"
@@ -182,7 +182,7 @@ export default function Form() {
         <div className="w-full px-3">
           <label
             htmlFor="price-range"
-            className="block mb-2 text-sm font-medium text-gray-700"
+            className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
           >
             Limite de Precio: ${priceLimit}
           </label>
@@ -201,13 +201,18 @@ export default function Form() {
             Escoge un número límite para el costo de tus pasajes
           </p>
 
-          <p className="mt-5">Vuelos disponibles: {filteredFlights.length}</p>
+          <p className="block uppercase tracking-wide text-gray-700 text-sm font-medium mt-5">
+            Vuelos disponibles:{" "}
+            <span className="font-normal">{filteredFlights.length}</span>
+          </p>
 
-          <p>
-            Destinos Disponibles:
-            {destinationsList.map((e, index) => (
-              <span key={index}> {e} </span>
-            ))}{" "}
+          <p className="block uppercase tracking-wide text-gray-700 text-sm font-medium mt-5">
+            Destinos Disponibles:{" "}
+            {destinationsList.map((e, index, arr) => (
+              <span className="font-normal" key={index}>
+                {e}{index !== arr.length - 1 ? ", " :  " " }
+              </span>
+            ))}
           </p>
         </div>
       </div>
